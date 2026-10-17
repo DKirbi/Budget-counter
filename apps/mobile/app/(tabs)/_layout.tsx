@@ -1,7 +1,7 @@
-/** Bottom tabs: Today · Days · Summary · Settings. Labels and test ids match the Storybook MiniApp. */
+/** Bottom tabs: Today · Days · Bills · Summary · Settings. Labels and test ids match the Storybook MiniApp. */
 import { useTheme } from '@tbc/ui-native';
 import { Tabs } from 'expo-router';
-import { CalendarDays, ChartNoAxesColumn, House, Settings } from 'lucide-react-native';
+import { CalendarDays, ChartNoAxesColumn, House, ReceiptText, Settings } from 'lucide-react-native';
 import * as React from 'react';
 
 export default function TabsLayout() {
@@ -31,6 +31,14 @@ export default function TabsLayout() {
           title: 'Days',
           tabBarButtonTestID: 'tab-days',
           tabBarIcon: ({ color, size }) => <CalendarDays color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="bills"
+        options={{
+          title: 'Bills',
+          tabBarButtonTestID: 'tab-bills',
+          tabBarIcon: ({ color, size }) => <ReceiptText color={color} size={size} />,
         }}
       />
       <Tabs.Screen
