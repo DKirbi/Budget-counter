@@ -1,0 +1,25 @@
+appId: app.budgetcounter.mobile
+name: F1 · First run — create a trip and see today's allowance
+tags: [f1, core]
+---
+- runFlow: subflows/fresh-start.yaml
+- tapOn:
+    id: create-trip-cta
+- tapOn:
+    id: trip-name
+- inputText: Lisbon
+- tapOn:
+    id: trip-budget
+- inputText: '700'
+- hideKeyboard
+# 700 € over 7 days = 100 €/day, previewed before saving.
+- assertVisible:
+    id: per-day-preview
+    text: ".*100\\.00.*"
+- tapOn:
+    id: create-trip-submit
+- assertVisible:
+    id: allowance-ring
+- assertVisible:
+    id: allowance-ring-amount
+    text: '€100.00'

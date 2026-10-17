@@ -1,0 +1,29 @@
+appId: app.budgetcounter.mobile
+name: F7 · Edit and delete a spend
+tags: [f7, core]
+---
+- runFlow: subflows/load-demo.yaml
+- tapOn: Lunch
+- assertVisible: Edit spend
+- tapOn:
+    id: spend-amount
+- eraseText: 10
+- inputText: '22.40'
+- hideKeyboard
+- tapOn:
+    id: tag-groceries
+- tapOn:
+    id: save-spend
+- assertVisible: '€22.40'
+# Delete asks first; cancel changes nothing.
+- tapOn: Tram 28
+- tapOn:
+    id: delete-spend
+- assertVisible: Delete this spend?
+- tapOn:
+    id: confirm-delete-spend-cancel
+- tapOn:
+    id: delete-spend
+- tapOn:
+    id: confirm-delete-spend-confirm
+- assertNotVisible: Tram 28

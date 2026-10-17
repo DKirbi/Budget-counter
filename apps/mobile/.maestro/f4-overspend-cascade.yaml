@@ -1,0 +1,22 @@
+appId: app.budgetcounter.mobile
+name: F4 · Overspend cascades into tomorrow
+tags: [f4, core]
+---
+- runFlow: subflows/fresh-start.yaml
+- runFlow: subflows/create-trip.yaml
+- runFlow:
+    file: subflows/log-spend.yaml
+    env:
+      AMOUNT: '125'
+      TAG: activities
+      NOTE: Concert
+- assertVisible:
+    id: day-message
+- assertVisible: You're €25.00 over today's limit
+- assertVisible: Over by
+- assertVisible:
+    id: allowance-ring-amount
+    text: '€25.00'
+- tapOn:
+    id: tab-days
+- assertVisible: Debt carried in

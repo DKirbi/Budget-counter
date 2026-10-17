@@ -1,0 +1,31 @@
+appId: app.budgetcounter.mobile
+name: F2 · Validation — errors are explained, then fixed
+tags: [f2, core]
+---
+- runFlow: subflows/fresh-start.yaml
+- tapOn:
+    id: create-trip-cta
+- tapOn:
+    id: create-trip-submit
+- assertVisible: Give your trip a name
+- assertVisible: Enter an amount, like 450 or 450.50
+- tapOn:
+    id: trip-name
+- inputText: Porto
+- tapOn:
+    id: trip-budget
+- inputText: '0'
+- hideKeyboard
+- tapOn:
+    id: create-trip-submit
+- assertVisible: Budget must be more than zero
+# European decimal comma is accepted.
+- tapOn:
+    id: trip-budget
+- eraseText: 3
+- inputText: 450,50
+- hideKeyboard
+- tapOn:
+    id: create-trip-submit
+- assertVisible:
+    id: allowance-ring

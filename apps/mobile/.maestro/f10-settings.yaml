@@ -1,0 +1,27 @@
+appId: app.budgetcounter.mobile
+name: F10 · Settings — theme, demo data, deleting a trip
+tags: [f10]
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- tapOn:
+    id: tab-settings
+- tapOn:
+    id: theme-dark
+- tapOn:
+    id: theme-light
+- scrollUntilVisible:
+    element:
+      id: load-demo
+- tapOn:
+    id: load-demo
+- scrollUntilVisible:
+    element:
+      id: 'delete-trip-.*'
+- tapOn:
+    id: 'delete-trip-.*'
+- assertVisible: All of its spends will be deleted too. This cannot be undone.
+- tapOn:
+    id: confirm-delete-trip-confirm
+- assertNotVisible: Lisbon long weekend

@@ -1,0 +1,8 @@
+# Wipe app data and start from the empty state (new-user experience).
+appId: app.budgetcounter.mobile
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- assertVisible:
+    id: empty-no-trip

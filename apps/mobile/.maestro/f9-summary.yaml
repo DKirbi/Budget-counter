@@ -1,0 +1,17 @@
+appId: app.budgetcounter.mobile
+name: F9 · Summary reflects the trip
+tags: [f9]
+---
+- runFlow: subflows/load-demo.yaml
+- tapOn:
+    id: tab-summary
+- assertVisible: '€271.00'
+- assertVisible: '€429.00'
+- assertVisible: '€90.33'
+- assertVisible: '€632.31'
+- assertVisible: '€29.00 ahead of plan'
+- assertVisible:
+    id: category-food
+- scrollUntilVisible:
+    element:
+      id: worst-day

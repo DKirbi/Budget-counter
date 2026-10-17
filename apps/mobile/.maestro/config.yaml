@@ -1,0 +1,19 @@
+# Maestro workspace config — `maestro test .maestro` runs every flow below, in order.
+# Flows F1…F10 mirror the Jest flows (packages/screens-native/src/flows.test.tsx) and the Storybook
+# `Flows/User journeys` stories 1:1; see docs/TESTING.md for the matrix.
+flows:
+  - 'f*.yaml'
+executionOrder:
+  continueOnFailure: false
+  flowsOrder:
+    - f0-smoke.yaml
+    - f1-first-run.yaml
+    - f2-validation.yaml
+    - f3-log-spend.yaml
+    - f4-overspend-cascade.yaml
+    - f5-spread-it-out.yaml
+    - f6-split-payment.yaml
+    - f7-edit-delete.yaml
+    - f8-other-days.yaml
+    - f9-summary.yaml
+    - f10-settings.yaml
