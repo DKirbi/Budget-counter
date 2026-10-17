@@ -222,7 +222,14 @@ describe('persistence', () => {
 
     const raw = JSON.parse(storage.getItem('trip-budget/v1') as string);
     expect(raw.version).toBe(STORE_VERSION);
-    expect(Object.keys(raw.state).sort()).toEqual(['activeTripId', 'settings', 'spends', 'trips']);
+    expect(Object.keys(raw.state).sort()).toEqual([
+      'activeTripId',
+      'merchantRules',
+      'receipts',
+      'settings',
+      'spends',
+      'trips',
+    ]);
 
     const b = createBudgetStore({ storage });
     expect(b.persist.hasHydrated()).toBe(true);
@@ -233,6 +240,52 @@ describe('persistence', () => {
 
   it('migrate fills missing fields from defaults', () => {
     expect(migrate({ trips: [makeTrip()] }, 0)).toEqual({ ...EMPTY_DATA, trips: [makeTrip()] });
+  });
+
+  it('upgrades a v1 save (before receipts existed) without losing anything', () => {
+    const storage = createMemoryStorage({
+      'trip-budget/v1': JSON.stringify({
+        version: 1,
+        state: {
+          trips: [makeTrip()],
+          spends: [
+            {
+              id: 's1',
+              tripId: 'trip-1',
+              date: '2026-05-02',
+              amount: 900,
+              tag: 'food',
+              createdAt: 'x',
+            },
+          ],
+          activeTripId: 'trip-1',
+          settings: { theme: 'dark' },
+        },
+      }),
+    });
+    const store = createBudgetStore({ storage });
+    const s = store.getState();
+    expect(s.trips).toHaveLength(1);
+    expect(s.spends[0]?.amount).toBe(900);
+    expect(s.settings.theme).toBe('dark');
+    expect(s.settings.autoConfirmReceipts).toBe(true);
+    expect(s.settings.ai).toEqual({ provider: 'none', model: '', baseUrl: '', dailyLimit: 20 });
+    expect(s.receipts).toEqual([]);
+    expect(s.merchantRules).toEqual({});
+    s.actions.setTheme('light');
+    expect(JSON.parse(storage.getItem('trip-budget/v1') as string).version).toBe(STORE_VERSION);
+  });
+
+  it('keeps new setting defaults when a same-version save lacks them', () => {
+    const storage = createMemoryStorage({
+      'trip-budget/v1': JSON.stringify({
+        version: STORE_VERSION,
+        state: { ...EMPTY_DATA, settings: { theme: 'dark' } },
+      }),
+    });
+    const { settings } = createBudgetStore({ storage }).getState();
+    expect(settings).toMatchObject({ theme: 'dark', autoConfirmReceipts: true });
+    expect(settings.ai.dailyLimit).toBe(20);
   });
 
   it('supports asynchronous storage (AsyncStorage-style) and reports hydration', async () => {

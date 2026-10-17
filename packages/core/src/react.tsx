@@ -16,7 +16,19 @@ import { useStore } from 'zustand';
 import { computeTripPlan, type TripPlan } from './allowance';
 import { type ISODate, todayISO } from './dates';
 import type { BudgetState, BudgetStore } from './store/budgetStore';
-import { selectActiveTrip, selectSpendsOnDate, selectTripSpends } from './store/selectors';
+import type { Receipt } from './receipts/types';
+import {
+  type AiQuota,
+  type TimelineDay,
+  selectActiveTrip,
+  selectAiQuota,
+  selectArchived,
+  selectInbox,
+  selectReceiptSpends,
+  selectSpendsOnDate,
+  selectTimeline,
+  selectTripSpends,
+} from './store/selectors';
 import { computeTripSummary, type TripSummary } from './summary';
 import type { Spend, Trip } from './types';
 
@@ -50,6 +62,14 @@ function useCtx(): BudgetContextValue {
   const ctx = useContext(BudgetContext);
   if (!ctx) throw new Error('Budget hooks must be used inside <BudgetProvider>');
   return ctx;
+}
+
+/**
+ * The store itself, for code that must read the *latest* state inside an async loop (a scan batch files bills one
+ * after another and each must see the previous one, which a render-time snapshot would not).
+ */
+export function useBudgetStore(): BudgetStore {
+  return useCtx().store;
 }
 
 /**
@@ -137,4 +157,57 @@ export function useActiveSummary(): TripSummary | null {
   const plan = useActivePlan();
   const spends = useBudget((s) => s.spends);
   return useMemo(() => (plan ? computeTripSummary(plan, spends) : null), [plan, spends]);
+}
+
+/**
+ * One saved bill, or `undefined` if it was deleted.
+ * @param id - Receipt id.
+ */
+export function useReceipt(id: string | undefined): Receipt | undefined {
+  return useBudget((s) => (id ? s.receipts.find((r) => r.id === id) : undefined));
+}
+
+/**
+ * The spends created from one bill.
+ * @param receiptId - Receipt id.
+ */
+export function useReceiptSpends(receiptId: string | undefined): Spend[] {
+  const spends = useBudget((s) => s.spends);
+  return useMemo(
+    () => (receiptId ? selectReceiptSpends(spends, receiptId) : []),
+    [spends, receiptId],
+  );
+}
+
+/** Bills waiting for a decision, oldest scan first. */
+export function useInbox(): Receipt[] {
+  const receipts = useBudget((s) => s.receipts);
+  return useMemo(() => selectInbox(receipts), [receipts]);
+}
+
+/** Bills kept as digital copies only, newest first. */
+export function useArchived(): Receipt[] {
+  const receipts = useBudget((s) => s.receipts);
+  return useMemo(() => selectArchived(receipts), [receipts]);
+}
+
+/**
+ * The timeline of counted bills for a trip, grouped by the day printed on the bill.
+ * @param tripId - Trip id, or `null` for an empty timeline.
+ */
+export function useTimeline(tripId: string | null): TimelineDay[] {
+  const receipts = useBudget((s) => s.receipts);
+  const spends = useBudget((s) => s.spends);
+  return useMemo(
+    () => (tripId ? selectTimeline({ receipts, spends }, tripId) : []),
+    [receipts, spends, tripId],
+  );
+}
+
+/** Today's remaining AI calls under the app's own daily cap. */
+export function useAiQuota(): AiQuota {
+  const ai = useBudget((s) => s.settings.ai);
+  const usage = useBudget((s) => s.settings.aiUsage);
+  const today = useToday();
+  return useMemo(() => selectAiQuota(ai, usage, today), [ai, usage, today]);
 }

@@ -6,9 +6,23 @@ import { type TripPlan, computeTripPlan } from './allowance';
 import type { ISODate } from './dates';
 import { type BudgetData, type BudgetStore, createBudgetStore } from './store/budgetStore';
 import { createMemoryStorage } from './store/storage';
-import type { Spend, Trip } from './types';
+import { RECEIPT_SCHEMA_VERSION, type Receipt, type ReceiptIssue } from './receipts/types';
+import { DEFAULT_SETTINGS, type Spend, type Trip } from './types';
+import type { FakeScanServices } from './receipts/fakes';
 
 export { createMemoryStorage } from './store/storage';
+export {
+  createFakeScanServices,
+  fixtureImages,
+  type FakeScanOptions,
+  type FakeScanServices,
+} from './receipts/fakes';
+export {
+  RECEIPT_FIXTURES,
+  fixtureOcr,
+  simpleBillText,
+  type ReceiptFixture,
+} from './receipts/fixtures';
 
 /** A fixed "today" used across stories and tests so screenshots are stable. */
 export const DEMO_TODAY: ISODate = '2026-05-03';
@@ -49,6 +63,62 @@ export function makeSpend(overrides: Partial<Spend> = {}): Spend {
   };
 }
 
+let receiptCounter = 0;
+/**
+ * Build a stored receipt (budgeted, Lisbon café, €12.50, day 2 of the demo trip) with unique ids.
+ * @param overrides - Top-level fields to change.
+ * @param data - Fields of `receipt.data` to change.
+ */
+export function makeReceipt(
+  overrides: Partial<Receipt> = {},
+  data: Partial<Receipt['data']> = {},
+): Receipt {
+  receiptCounter += 1;
+  return {
+    id: `receipt-${receiptCounter}`,
+    tripId: 'trip-1',
+    status: 'budgeted',
+    date: '2026-05-02',
+    tag: 'food',
+    rawText: '',
+    acknowledged: [],
+    scannedAt: `2026-05-03T18:${String(receiptCounter % 60).padStart(2, '0')}:00.000Z`,
+    updatedAt: '2026-05-03T18:00:00.000Z',
+    data: {
+      schemaVersion: RECEIPT_SCHEMA_VERSION,
+      source: 'ocr',
+      merchant: 'Pastelaria Central',
+      date: '2026-05-02',
+      time: '09:41',
+      currency: 'EUR',
+      total: 1_250,
+      items: [],
+      confidence: 0.9,
+      ...data,
+    },
+    ...overrides,
+  };
+}
+
+/**
+ * Build a review issue (a date problem with two ways out) for component stories.
+ * @param overrides - Fields to change.
+ */
+export function makeIssue(overrides: Partial<ReceiptIssue> = {}): ReceiptIssue {
+  return {
+    code: 'DATE_NOT_TODAY',
+    severity: 'decision',
+    title: 'This bill is from 28 Apr',
+    detail: 'It is four days older than today. File it under the day printed on it?',
+    acknowledgeable: true,
+    resolved: false,
+    ...overrides,
+  };
+}
+
+/** Services plugged into a story or test (fake OCR, picker, secrets, fetch) — see {@link StoryLoaded}. */
+export type StoryServices = FakeScanServices;
+
 /** A believable mid-trip data set: day 1 frugal, day 2 overspent, day 3 (today) in progress. */
 export function demoData(): BudgetData {
   const trip = makeTrip();
@@ -64,7 +134,9 @@ export function demoData(): BudgetData {
   return {
     trips: [trip],
     activeTripId: trip.id,
-    settings: { theme: 'system' },
+    receipts: [],
+    merchantRules: {},
+    settings: DEFAULT_SETTINGS,
     spends: [
       s('2026-05-01', 1_450, 'food', 'Pastéis de nata', 1),
       s('2026-05-01', 4_200, 'transport', 'Metro day pass + airport', 2),
@@ -119,4 +191,6 @@ export function createTestStore(options: TestStoreOptions = {}): BudgetStore {
  */
 export interface StoryLoaded {
   store: BudgetStore;
+  /** Fake scan services (OCR by fixture, recording fetch…). Configure with `parameters.scan`. */
+  services: StoryServices;
 }
