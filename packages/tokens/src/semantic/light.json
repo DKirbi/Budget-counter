@@ -1,0 +1,39 @@
+{
+  "semantic": {
+    "light": {
+      "$type": "color",
+      "background": { "$value": "{color.stone.50}", "$description": "App canvas" },
+      "foreground": { "$value": "{color.stone.900}", "$description": "Default text" },
+      "card": { "$value": "{color.white}" },
+      "card-foreground": { "$value": "{color.stone.900}" },
+      "popover": { "$value": "{color.white}" },
+      "popover-foreground": { "$value": "{color.stone.900}" },
+      "primary": { "$value": "{color.teal.700}", "$description": "Brand / main action" },
+      "primary-foreground": { "$value": "{color.white}" },
+      "secondary": { "$value": "{color.stone.100}" },
+      "secondary-foreground": { "$value": "{color.stone.900}" },
+      "muted": { "$value": "{color.stone.100}" },
+      "muted-foreground": { "$value": "{color.stone.600}" },
+      "accent": { "$value": "{color.teal.50}" },
+      "accent-foreground": { "$value": "{color.teal.900}" },
+      "destructive": { "$value": "{color.red.600}", "$description": "Errors and overspend" },
+      "destructive-foreground": { "$value": "{color.white}" },
+      "success": { "$value": "{color.emerald.700}", "$description": "Under budget / saved" },
+      "success-foreground": { "$value": "{color.white}" },
+      "warning": { "$value": "{color.amber.600}", "$description": "Close to the daily limit" },
+      "warning-foreground": { "$value": "{color.amber.950}" },
+      "info": { "$value": "{color.sky.700}" },
+      "info-foreground": { "$value": "{color.white}" },
+      "border": { "$value": "{color.stone.200}" },
+      "input": { "$value": "{color.stone.300}" },
+      "ring": { "$value": "{color.teal.600}" },
+      "tag-food": { "$value": "{color.orange.600}" },
+      "tag-groceries": { "$value": "{color.lime.700}" },
+      "tag-transport": { "$value": "{color.sky.600}" },
+      "tag-stay": { "$value": "{color.violet.600}" },
+      "tag-activities": { "$value": "{color.pink.600}" },
+      "tag-shopping": { "$value": "{color.amber.600}" },
+      "tag-other": { "$value": "{color.stone.500}" }
+    }
+  }
+}

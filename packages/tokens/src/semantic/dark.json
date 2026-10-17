@@ -1,0 +1,39 @@
+{
+  "semantic": {
+    "dark": {
+      "$type": "color",
+      "background": { "$value": "{color.stone.950}" },
+      "foreground": { "$value": "{color.stone.50}" },
+      "card": { "$value": "{color.stone.900}" },
+      "card-foreground": { "$value": "{color.stone.50}" },
+      "popover": { "$value": "{color.stone.900}" },
+      "popover-foreground": { "$value": "{color.stone.50}" },
+      "primary": { "$value": "{color.teal.400}" },
+      "primary-foreground": { "$value": "{color.teal.950}" },
+      "secondary": { "$value": "{color.stone.800}" },
+      "secondary-foreground": { "$value": "{color.stone.50}" },
+      "muted": { "$value": "{color.stone.800}" },
+      "muted-foreground": { "$value": "{color.stone.400}" },
+      "accent": { "$value": "{color.teal.900}" },
+      "accent-foreground": { "$value": "{color.teal.50}" },
+      "destructive": { "$value": "{color.red.400}" },
+      "destructive-foreground": { "$value": "{color.red.950}" },
+      "success": { "$value": "{color.emerald.400}" },
+      "success-foreground": { "$value": "{color.emerald.950}" },
+      "warning": { "$value": "{color.amber.400}" },
+      "warning-foreground": { "$value": "{color.amber.950}" },
+      "info": { "$value": "{color.sky.400}" },
+      "info-foreground": { "$value": "{color.sky.950}" },
+      "border": { "$value": "{color.stone.800}" },
+      "input": { "$value": "{color.stone.700}" },
+      "ring": { "$value": "{color.teal.400}" },
+      "tag-food": { "$value": "{color.orange.400}" },
+      "tag-groceries": { "$value": "{color.lime.400}" },
+      "tag-transport": { "$value": "{color.sky.400}" },
+      "tag-stay": { "$value": "{color.violet.400}" },
+      "tag-activities": { "$value": "{color.pink.400}" },
+      "tag-shopping": { "$value": "{color.amber.400}" },
+      "tag-other": { "$value": "{color.stone.400}" }
+    }
+  }
+}

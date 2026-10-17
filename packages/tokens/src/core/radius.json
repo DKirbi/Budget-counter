@@ -1,0 +1,13 @@
+{
+  "radius": {
+    "$type": "dimension",
+    "$description": "Corner radii. `lg` is the shadcn `--radius` equivalent used by cards and inputs.",
+    "none": { "$value": "0px" },
+    "sm": { "$value": "6px" },
+    "md": { "$value": "8px" },
+    "lg": { "$value": "12px" },
+    "xl": { "$value": "16px" },
+    "2xl": { "$value": "24px" },
+    "full": { "$value": "9999px" }
+  }
+}

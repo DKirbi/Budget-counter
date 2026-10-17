@@ -1,0 +1,29 @@
+{
+  "name": "@tbc/tokens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Design tokens (W3C DTCG JSON) compiled by Style Dictionary into CSS, SCSS, Tailwind/NativeWind preset and a typed React Native theme.",
+  "type": "module",
+  "exports": {
+    ".": "./generated/theme.ts",
+    "./theme": "./generated/theme.ts",
+    "./tailwind-preset": "./generated/tailwind.preset.cjs",
+    "./css": "./generated/tokens.css",
+    "./css/native": "./generated/tokens.native.css",
+    "./css/tailwind4": "./generated/tokens.tw4.css",
+    "./scss": "./generated/tokens.scss",
+    "./json": "./generated/tokens.json",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --check",
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "lint": "eslint scripts test",
+    "typecheck": "echo \"tokens: JS only, nothing to typecheck\""
+  },
+  "devDependencies": {
+    "sass": "^1.93.0",
+    "style-dictionary": "^5.5.5"
+  }
+}
