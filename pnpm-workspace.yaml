@@ -1,0 +1,12 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# pnpm 10 does not run dependency install scripts unless allowed. None of these are needed here: each ships
+# prebuilt binaries through optionalDependencies (esbuild, @swc/core, unrs-resolver, @parcel/watcher) and the
+# install script is only a fallback/verification step. Listing them silences the warning explicitly.
+ignoredBuiltDependencies:
+  - '@parcel/watcher'
+  - '@swc/core'
+  - esbuild
+  - unrs-resolver

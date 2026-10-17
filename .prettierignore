@@ -1,0 +1,7 @@
+node_modules
+pnpm-lock.yaml
+packages/tokens/generated
+storybook-static
+.turbo
+apps/mobile/android
+apps/mobile/ios
