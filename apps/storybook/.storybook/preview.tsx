@@ -3,17 +3,21 @@
  *
  * Every story is wrapped, outermost first, by:
  *  1. `withTheme`    — the toolbar's Light/Dark switch (same NativeWind colour-scheme API the phone uses),
- *  2. `withBudget`   — a fresh in-memory `BudgetStore` per story render, seeded from `parameters.budget`,
+ *  2. `withBudget`   — a fresh in-memory `BudgetStore` per story render, seeded from `parameters.budget`, plus fake
+ *                      device services (OCR text per photo, camera/library, secret store, AI `fetch`) from `parameters.scan`,
  *  3. `withFrame`    — sizes the canvas like a phone screen or a card, from `parameters.frame`.
  */
 import type { Decorator, Preview } from '@storybook/react-native-web-vite';
 import { BudgetProvider } from '@tbc/core/react';
 import {
   DEMO_TODAY,
+  type FakeScanOptions,
+  createFakeScanServices,
   createTestStore,
   type StoryLoaded,
   type TestStoreOptions,
 } from '@tbc/core/testing';
+import { ScanServicesProvider } from '@tbc/screens-native';
 import { UIProvider } from '@tbc/ui-native';
 import * as React from 'react';
 import './storybook.css';
@@ -23,6 +27,11 @@ declare module 'storybook/internal/csf' {
   interface Parameters {
     /** Seed for the in-memory store. `demo: true` = the Lisbon trip, day 3 of 7. Default: empty app. */
     budget?: TestStoreOptions & { today?: string };
+    /**
+     * Behaviour of the fake scan services: which text each photo "reads" as, what the library returns, whether OCR
+     * exists, what the AI service answers. Default: nothing readable, no photos, AI unreachable.
+     */
+    scan?: FakeScanOptions;
     /**
      * `phone` — 390×780 device frame (screens & flows), `card` — 360px wide surface (components),
      * `wide` — full width (token docs), `none` — no wrapper.
@@ -51,10 +60,10 @@ const withTheme: Decorator = (Story, context) => {
 };
 
 const withBudget: Decorator = (Story, context) => {
-  const { store } = context.loaded as StoryLoaded;
+  const { store, services } = context.loaded as StoryLoaded;
   return (
     <BudgetProvider store={store} today={context.parameters.budget?.today ?? DEMO_TODAY}>
-      {Story()}
+      <ScanServicesProvider services={services}>{Story()}</ScanServicesProvider>
     </BudgetProvider>
   );
 };
@@ -94,7 +103,10 @@ const preview: Preview = {
   // Order matters: the first decorator is the innermost wrapper.
   decorators: [withFrame, withBudget, withTheme],
   loaders: [
-    async ({ parameters }): Promise<StoryLoaded> => ({ store: createTestStore(parameters.budget) }),
+    async ({ parameters }): Promise<StoryLoaded> => ({
+      store: createTestStore(parameters.budget),
+      services: createFakeScanServices(parameters.scan),
+    }),
   ],
   tags: ['autodocs'],
   initialGlobals: { theme: 'light' },
