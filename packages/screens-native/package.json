@@ -18,7 +18,7 @@
     "@tbc/core": "workspace:*",
     "@tbc/tokens": "workspace:*",
     "@tbc/ui-native": "workspace:*",
-    "react-hook-form": "^7.89.0"
+    "react-hook-form": "^7.90.0"
   },
   "peerDependencies": {
     "nativewind": "^4.2.0",
