@@ -30,10 +30,12 @@ pnpm start            # = expo start; prints a QR code
   `pnpm --filter @tbc/mobile exec expo start --tunnel`.
 - Shake the device (or press `m` in the terminal) for the dev menu; `r` reloads.
 
-Limits: Expo Go ships a fixed set of native modules. This MVP only uses modules Expo Go includes (Reanimated, SVG,
-Gesture Handler, Screens, AsyncStorage), so it runs. The **home-screen widgets** planned for later cannot run in Expo Go
-— move to method 2 before starting them. Expo Go also only supports the current SDK (57 here); if the store version is
-newer/older, use method 2.
+Limits: Expo Go ships a fixed set of native modules. The budget loop only uses modules Expo Go includes (Reanimated,
+SVG, Gesture Handler, Screens, AsyncStorage). **Bill scanning is the exception:** the text reader (`expo-mlkit-ocr`) is a
+native module that Expo Go does not contain. In Expo Go the Bills tab still works — you can take or pick photos (they
+land in the inbox with a notice that this build cannot read text) and type each bill in by hand — but to see real OCR you
+need method 2. The planned **home-screen widgets** also need method 2. Expo Go only supports the current SDK (57 here);
+if the store version is newer/older, use method 2.
 
 ## 2 · Development build (dev-client)
 
@@ -60,6 +62,21 @@ pnpm --filter @tbc/mobile start:dev-client        # open the app, it finds the d
 cd apps/mobile
 npx expo run:android            # prebuilds, compiles the debug APK and launches it on the connected device
 ```
+
+### Trying the bill scanner on a development build
+
+1. Install the dev build (above). Grant camera and photo access when asked.
+2. **Bills → Scan bills.** Use _Take a photo of a bill_ for one at a time or _Choose photos_ for several at once (up to 30); _Type a bill in_ skips the camera.
+3. Good first test set — four bills: a clean one from today (expect _Counted_, no prompt), one from last week (expect a
+   "different date" question), one with a deliberately cropped total (expect _Needs you_ and the AI / by-hand choice), and
+   the same bill twice (expect the duplicate card).
+4. Optional AI fallback: **Settings → Bills & AI**, choose _Google Gemini_, paste a key from Google AI Studio, then open a
+   bill that could not be read and choose _Finish with AI_ (or _I'll fill it in_ to stay offline). The photo is sent only after you confirm in the dialog.
+5. Photos taken in dim light, at an angle, or of faded thermal paper are the realistic failure cases — they should end up
+   in the inbox rather than being counted wrongly. That behaviour (not perfect accuracy) is what to judge.
+
+The OCR, the camera and the photo store are the parts the sandbox could not execute: the Jest/Storybook suites run the
+whole flow against fakes. Real-paper accuracy is verified only by this step.
 
 ## 3 · Preview APK — the installable file
 
@@ -100,7 +117,7 @@ Requires JDK 17 and the Android SDK (`ANDROID_HOME`).
 
 ## 4 · Automated E2E with Maestro
 
-Maestro drives the installed app through YAML flows (`apps/mobile/.maestro`), one per user journey F0–F10.
+Maestro drives the installed app through YAML flows (`apps/mobile/.maestro`), one per user journey F0–F10 (the bill-scanning journeys F11–F15 are covered in Jest and Storybook, not Maestro, in this drop).
 
 ```bash
 curl -Ls "https://get.maestro.mobile.dev" | bash      # once
@@ -135,19 +152,22 @@ test needs no scripts; Maestro flows can also be run on BrowserStack / Maestro C
 
 ## Troubleshooting
 
-| Symptom                                                | Fix                                                                                              |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| QR scans but the app can't load                        | Same Wi-Fi? Try `--tunnel`; disable VPN; allow the port through the firewall                     |
-| "Project is incompatible with this version of Expo Go" | Store Expo Go is on a different SDK → use a dev build (method 2)                                 |
-| `adb: no devices`                                      | Enable USB debugging, accept the RSA prompt, `adb kill-server && adb devices`                    |
-| "App not installed" over an older build                | Different signing key → `adb uninstall app.budgetcounter.mobile` first                           |
-| Styles missing in a release build only                 | `global.css` must be imported in `app/_layout.tsx`; run `pnpm --filter @tbc/mobile export:check` |
-| Maestro can't find an element                          | Run `pnpm check:maestro`; open `maestro studio` and compare the id with the `testID` in source   |
-| First Gradle build takes 15+ min                       | Normal (cold cache). The workflow uses `gradle/actions/setup-gradle` to cache afterwards         |
+| Symptom                                                      | Fix                                                                                              |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| QR scans but the app can't load                              | Same Wi-Fi? Try `--tunnel`; disable VPN; allow the port through the firewall                     |
+| "Project is incompatible with this version of Expo Go"       | Store Expo Go is on a different SDK → use a dev build (method 2)                                 |
+| `adb: no devices`                                            | Enable USB debugging, accept the RSA prompt, `adb kill-server && adb devices`                    |
+| "App not installed" over an older build                      | Different signing key → `adb uninstall app.budgetcounter.mobile` first                           |
+| Styles missing in a release build only                       | `global.css` must be imported in `app/_layout.tsx`; run `pnpm --filter @tbc/mobile export:check` |
+| Scan screen says "This build cannot read text on the device" | You are in Expo Go. Install a development build (method 2); OCR is a native module               |
+| Maestro can't find an element                                | Run `pnpm check:maestro`; open `maestro studio` and compare the id with the `testID` in source   |
+| First Gradle build takes 15+ min                             | Normal (cold cache). The workflow uses `gradle/actions/setup-gradle` to cache afterwards         |
 
 ## What has and has not been verified
 
-Verified in the authoring sandbox: the Android JS bundle builds (`expo export --platform android`), all Jest/Storybook
-tests pass, Maestro flows' selectors match source (`check:maestro`). **Not** verifiable there (no Android SDK, emulator or
-device): the APK build itself, installing it, Maestro on a real emulator, EAS and Play/TestFlight steps. Treat the first
+Verified in the authoring sandbox: the Android JS bundle builds (`expo export --platform android`), `expo prebuild` runs
+for Android and iOS (config plugins for ML Kit, image picker and secure store resolve), all Jest/Storybook tests pass,
+Maestro flows' selectors match source (`check:maestro`). **Not** verifiable there (no Android SDK, emulator, macOS or
+device): the APK/IPA build itself, installing it, real camera + ML Kit text recognition, Maestro on a real emulator, EAS
+and Play/TestFlight steps. Treat the first
 Actions run as the verification, and expect to adjust small things (SDK image, memory, signing).
