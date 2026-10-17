@@ -1,0 +1,17 @@
+# Start from a clean install and load the Lisbon demo trip (day 3 of 7) from Settings.
+appId: app.budgetcounter.mobile
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- tapOn:
+    id: tab-settings
+- scrollUntilVisible:
+    element:
+      id: load-demo
+- tapOn:
+    id: load-demo
+- tapOn:
+    id: tab-today
+- assertVisible:
+    id: allowance-ring

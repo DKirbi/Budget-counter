@@ -1,0 +1,24 @@
+appId: app.budgetcounter.mobile
+name: F8 · Explore days and log against another day
+tags: [f8]
+---
+- runFlow: subflows/load-demo.yaml
+- tapOn:
+    id: tab-days
+# `id` is a regex: the first day card is the trip's first day (a past, frugal day).
+- tapOn:
+    id: 'day-card-.*'
+    index: 0
+- assertVisible:
+    id: screen-day
+- assertVisible: Pastéis de nata
+- tapOn:
+    id: add-spend-day
+- tapOn:
+    id: spend-amount
+- inputText: '3'
+- hideKeyboard
+- tapOn:
+    id: save-spend
+- assertVisible:
+    id: screen-day

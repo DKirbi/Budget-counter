@@ -1,0 +1,45 @@
+appId: app.budgetcounter.mobile
+name: F6 · Split a card payment into tagged parts
+tags: [f6, core]
+---
+- runFlow: subflows/load-demo.yaml
+- tapOn:
+    id: add-spend
+- tapOn:
+    id: spend-amount
+- inputText: '40'
+- hideKeyboard
+- tapOn:
+    id: split-switch
+- assertVisible:
+    id: split-left
+    text: ".*40\\.00 left to assign.*"
+- tapOn:
+    id: part-0-amount
+- inputText: '25'
+- tapOn:
+    id: part-0-tag-food
+- tapOn:
+    id: part-1-amount
+- inputText: '10'
+- hideKeyboard
+- tapOn:
+    id: part-1-tag-groceries
+- assertVisible:
+    id: split-left
+    text: ".*5\\.00 left to assign.*"
+# Saving is blocked until the parts add up.
+- tapOn:
+    id: save-spend
+- assertVisible:
+    id: parts-error
+# Fix the second part.
+- tapOn:
+    id: part-1-amount
+- eraseText: 5
+- inputText: '15'
+- hideKeyboard
+- assertVisible: All assigned
+- tapOn:
+    id: save-spend
+- assertVisible: Split

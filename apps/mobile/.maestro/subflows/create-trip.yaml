@@ -1,0 +1,19 @@
+# Create a trip from the empty state. Env: TRIP_NAME, TRIP_BUDGET (defaults: Lisbon / 700).
+appId: app.budgetcounter.mobile
+env:
+  TRIP_NAME: Lisbon
+  TRIP_BUDGET: '700'
+---
+- tapOn:
+    id: create-trip-cta
+- tapOn:
+    id: trip-name
+- inputText: ${TRIP_NAME}
+- tapOn:
+    id: trip-budget
+- inputText: ${TRIP_BUDGET}
+- hideKeyboard
+- tapOn:
+    id: create-trip-submit
+- assertVisible:
+    id: allowance-ring

@@ -1,0 +1,22 @@
+appId: app.budgetcounter.mobile
+name: F5 · Switch the overspend rule to "spread it out"
+tags: [f5]
+---
+- runFlow: subflows/fresh-start.yaml
+- runFlow: subflows/create-trip.yaml
+- runFlow:
+    file: subflows/log-spend.yaml
+    env:
+      AMOUNT: '160'
+      TAG: activities
+      NOTE: Concert
+- tapOn:
+    id: tab-settings
+- scrollUntilVisible:
+    element:
+      id: settings-policy-redistribute
+- tapOn:
+    id: settings-policy-redistribute
+- tapOn:
+    id: tab-today
+- assertVisible: '.*spread over the remaining 6 days.*'

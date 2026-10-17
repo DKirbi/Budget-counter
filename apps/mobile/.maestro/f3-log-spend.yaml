@@ -1,0 +1,19 @@
+appId: app.budgetcounter.mobile
+name: F3 · Log a spend — the balance updates immediately
+tags: [f3, core]
+---
+- runFlow: subflows/load-demo.yaml
+- runFlow:
+    file: subflows/log-spend.yaml
+    env:
+      AMOUNT: '12,50'
+      TAG: food
+      NOTE: Espresso
+- assertVisible: Espresso
+- assertVisible: '€12.50'
+# Empty amount is rejected and the form stays open.
+- tapOn:
+    id: add-spend
+- tapOn:
+    id: save-spend
+- assertVisible: Enter an amount, like 12 or 12.50

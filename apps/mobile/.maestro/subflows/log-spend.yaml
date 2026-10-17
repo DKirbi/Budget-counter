@@ -1,0 +1,16 @@
+# Log a spend from Today. Env: AMOUNT, TAG (food|groceries|transport|stay|activities|shopping|other), NOTE.
+appId: app.budgetcounter.mobile
+---
+- tapOn:
+    id: add-spend
+- tapOn:
+    id: spend-amount
+- inputText: ${AMOUNT}
+- tapOn:
+    id: tag-${TAG}
+- tapOn:
+    id: spend-note
+- inputText: ${NOTE}
+- hideKeyboard
+- tapOn:
+    id: save-spend

@@ -1,0 +1,23 @@
+appId: app.budgetcounter.mobile
+name: F0 · Smoke — the app starts and the tab bar works
+tags: [smoke]
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- assertVisible:
+    id: empty-no-trip
+- tapOn:
+    id: tab-days
+- assertVisible:
+    id: screen-days
+- tapOn:
+    id: tab-summary
+- tapOn:
+    id: tab-settings
+- assertVisible:
+    id: screen-settings
+- tapOn:
+    id: tab-today
+- assertVisible:
+    id: screen-today
