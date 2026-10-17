@@ -1,0 +1,95 @@
+# Continuous integration: every PR and every push to main.
+#
+# The design-system contract is enforced here:
+#   tokens  ──► generated files must be committed and current  (job: verify → "Tokens are up to date")
+#   ui-native ──► components render in Jest AND in a real browser via Storybook (jobs: verify, storybook)
+#   apps/mobile ──► the Android JS bundle builds with the new tokens (job: expo-export)
+# Turborepo (`dependsOn: ["^build"]`) re-runs a package's tests whenever a package it depends on changed,
+# so editing packages/tokens/src re-tests every consumer.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CI: 'true'
+  TURBO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  verify:
+    name: Lint · typecheck · unit & component tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Tokens are up to date
+        run: pnpm tokens:check # fails if `pnpm tokens` would change any generated file
+      - name: Maestro flows reference real testIDs
+        run: pnpm check:maestro
+
+      - name: Cache Turborepo
+        uses: actions/cache@v6
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-
+
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  storybook:
+    name: Storybook build · interaction & a11y tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install Chromium for Playwright
+        run: pnpm --filter @tbc/storybook exec playwright install --with-deps chromium
+      - name: Build Storybook
+        run: pnpm build-storybook
+      # Serves the static build and runs every story: render + play function + axe accessibility check.
+      - name: Test every story
+        run: pnpm --filter @tbc/storybook test:ci
+      - uses: actions/upload-artifact@v7
+        with:
+          name: storybook-static
+          path: apps/storybook/storybook-static
+          retention-days: 7
+
+  expo-export:
+    name: Expo bundle smoke test (Android)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Runs Metro + NativeWind + the token CSS exactly as a device build would, without needing the Android SDK.
+      - run: pnpm --filter @tbc/mobile export:check

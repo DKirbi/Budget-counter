@@ -1,0 +1,48 @@
+# Design-token change → regenerated outputs, automatically.
+#
+# A designer or engineer edits packages/tokens/src/**/*.json (or exports new tokens from Figma). This workflow runs
+# Style Dictionary and, if the generated CSS / SCSS / Tailwind preset / theme.ts changed, pushes the regeneration to
+# the same PR branch. CI then re-runs every consumer: ui-native tests, Storybook stories (+ a11y/contrast), the Expo
+# bundle. The web app (packages/*-web, see docs/WEB_BUILD_GUIDE.md) consumes the same generated files, so it updates too.
+name: Tokens · regenerate
+
+on:
+  pull_request:
+    paths:
+      - 'packages/tokens/src/**'
+      - 'packages/tokens/scripts/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  regenerate:
+    # Skip forks: the default token cannot push to a fork's branch.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @tbc/tokens test
+      - run: pnpm tokens
+      - name: Commit regenerated files
+        run: |
+          if [[ -n "$(git status --porcelain packages/tokens/generated)" ]]; then
+            git config user.name "tokens-bot"
+            git config user.email "tokens-bot@users.noreply.github.com"
+            git add packages/tokens/generated
+            git commit -m "chore(tokens): regenerate outputs"
+            git push
+            echo "### Tokens regenerated" >> "$GITHUB_STEP_SUMMARY"
+            git show --stat --oneline HEAD >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Generated files already up to date." >> "$GITHUB_STEP_SUMMARY"
+          fi

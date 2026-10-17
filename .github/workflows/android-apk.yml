@@ -1,0 +1,63 @@
+# Builds an installable Android APK on GitHub's runners — no Expo account needed.
+#
+#   expo prebuild  → generates the native android/ project from app.json + config plugins (CNG)
+#   gradlew assembleRelease → produces app-release.apk (signed with the debug keystore that Expo's template ships,
+#                             which is exactly what you want for internal testing; use EAS or your own keystore for the Play Store)
+#
+# Trigger: manually (Actions → "Android APK" → Run workflow), on version tags, or called by e2e-android.yml.
+# Get the APK: run summary → Artifacts → app-release-apk, then `adb install app-release.apk` or open it on the phone.
+name: Android APK
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # attach the APK to a GitHub Release on tags
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v6
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate the native Android project
+        working-directory: apps/mobile
+        run: pnpm exec expo prebuild --platform android --no-install --clean
+
+      - name: Build release APK
+        working-directory: apps/mobile/android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,x86_64
+
+      - name: Collect APK
+        run: |
+          mkdir -p dist
+          cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk dist/app-release.apk
+          ls -lh dist
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: app-release-apk
+          path: dist/app-release.apk
+          retention-days: 14
+
+      - name: Attach to GitHub Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/app-release.apk
