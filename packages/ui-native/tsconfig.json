@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["jest", "nativewind/types"],
+    "lib": ["ES2023", "DOM"],
+    "jsxImportSource": "nativewind"
+  },
+  "include": ["src", "nativewind-env.d.ts", "jest"]
+}
