@@ -1,0 +1,79 @@
+{
+  "name": "@tbc/ui-native",
+  "version": "0.1.0",
+  "private": true,
+  "description": "React Native design system: shadcn-style primitives (rn-primitives + NativeWind + CVA) and domain components for the trip budget app.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tailwind": "./tailwind.cjs",
+    "./global.css": "./global.css",
+    "./jest": "./jest/preset.cjs",
+    "./package.json": "./package.json",
+    "./babel": "./babel.cjs",
+    "./testing": "./src/testing.tsx",
+    "./testing-core": "./src/testing-core.ts",
+    "./storybook": "./src/storybook.tsx"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@rn-primitives/alert-dialog": "^1.5.2",
+    "@rn-primitives/label": "^1.5.2",
+    "@rn-primitives/portal": "^1.5.3",
+    "@rn-primitives/progress": "^1.5.2",
+    "@rn-primitives/radio-group": "^1.5.2",
+    "@rn-primitives/slot": "^1.5.2",
+    "@rn-primitives/switch": "^1.5.2",
+    "@rn-primitives/tabs": "^1.5.2",
+    "@rn-primitives/toggle-group": "^1.5.2",
+    "@tbc/core": "workspace:*",
+    "@tbc/tokens": "workspace:*",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react-native": "^1.48.0",
+    "tailwind-merge": "^3.7.0"
+  },
+  "peerDependencies": {
+    "nativewind": "^4.2.0",
+    "react": ">=19",
+    "react-native": ">=0.83",
+    "react-native-svg": ">=15",
+    "react-native-screens": ">=4"
+  },
+  "devDependencies": {
+    "@react-native/jest-preset": "^0.86.3",
+    "@storybook/react-native-web-vite": "^10.6.0",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^29.5.14",
+    "@types/react": "~19.2.0",
+    "babel-preset-expo": "~57.0.0",
+    "expo": "~57.0.26",
+    "jest": "^29.7.0",
+    "jest-expo": "~57.0.5",
+    "nativewind": "^4.2.7",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-svg": "15.15.4",
+    "react-native-worklets": "0.10.1",
+    "storybook": "^10.6.0",
+    "tailwindcss": "3.4.19",
+    "typescript": "~5.9.3"
+  },
+  "peerDependenciesMeta": {
+    "react-native-screens": {
+      "optional": true
+    }
+  }
+}
