@@ -1,0 +1,18 @@
+{
+  "size": {
+    "$type": "dimension",
+    "$description": "Component-level sizing decisions. Controls never go below the 44px touch target (WCAG 2.5.5 / Apple HIG).",
+    "touchTarget": { "$value": "44px" },
+    "control": {
+      "sm": { "$value": "36px" },
+      "md": { "$value": "44px" },
+      "lg": { "$value": "52px" }
+    },
+    "icon": {
+      "sm": { "$value": "16px" },
+      "md": { "$value": "20px" },
+      "lg": { "$value": "24px" },
+      "xl": { "$value": "32px" }
+    }
+  }
+}
