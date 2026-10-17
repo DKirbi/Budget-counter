@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly }
+    groups:
+      # Expo pins matching versions of these together — bump them as one PR, then run `npx expo install --fix`.
+      expo-sdk:
+        patterns:
+          ['expo', 'expo-*', 'react-native', 'react-native-*', '@react-native/*', 'jest-expo']
+      storybook:
+        patterns: ['storybook', '@storybook/*']
+      lint:
+        patterns: ['eslint*', '@eslint/*', 'typescript-eslint', 'globals']
+    ignore:
+      # Deliberate: NativeWind v4 needs Tailwind 3. See docs/DESIGN_SYSTEM.md → "NativeWind v4 vs v5 / Uniwind".
+      - dependency-name: tailwindcss
+        update-types: ['version-update:semver-major']

@@ -1,0 +1,68 @@
+# Cloud builds and over-the-air updates with Expo Application Services (needs a free Expo account).
+# Setup once:  `npx eas-cli login && npx eas-cli init` in apps/mobile, then add the repo secret EXPO_TOKEN
+# (expo.dev → Account settings → Access tokens).
+#
+#   profile "preview"     → installable APK (QR code / link on expo.dev, share with testers)
+#   profile "development" → dev-client APK (fast refresh against your laptop)
+#   profile "production"  → Play Store bundle (AAB)
+#   "update" job          → publishes a JS-only OTA update to a channel, no new binary needed
+name: EAS build & update
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Build profile from apps/mobile/eas.json
+        type: choice
+        options: [preview, development, production]
+        default: preview
+      platform:
+        type: choice
+        options: [android, ios, all]
+        default: android
+      publish_update:
+        description: Also publish an OTA update to the profile's channel
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: expo/expo-github-action@v9
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: pnpm install --frozen-lockfile
+      - name: Build on EAS
+        working-directory: apps/mobile
+        run: eas build --platform ${{ inputs.platform }} --profile ${{ inputs.profile }} --non-interactive --no-wait
+
+  update:
+    if: inputs.publish_update
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: expo/expo-github-action@v9
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: pnpm install --frozen-lockfile
+      - name: Publish OTA update
+        working-directory: apps/mobile
+        run: eas update --channel ${{ inputs.profile }} --message "${{ github.sha }}" --non-interactive
