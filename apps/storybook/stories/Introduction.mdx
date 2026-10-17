@@ -1,0 +1,48 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Introduction" />
+
+# Trip Budget Counter · Design system
+
+A trip budget split into **daily allowances** — unspent money carries over, overspend is taken from tomorrow (or spread over the remaining days).
+This Storybook documents the React Native design system that powers the mobile app, rendered **on the web** with `react-native-web` so it can be reviewed, tested and shared without a phone.
+
+## How it fits together
+
+```text
+packages/tokens          W3C design tokens (JSON)  ──►  Style Dictionary  ──►  CSS vars · SCSS · Tailwind preset · theme.ts
+packages/ui-native       shadcn-style primitives (rn-primitives + NativeWind + CVA) and domain components
+packages/screens-native  the app's screens + MiniApp (router-free shell used for flows)
+packages/core            pure domain (allowance engine, money, dates) + zustand store — shared with the future web app
+apps/mobile              Expo Router app
+apps/storybook           this site
+```
+
+Change a token → `pnpm tokens` regenerates every output → components, the Expo app and this Storybook pick it up (CI fails if generated files are stale).
+
+## What is where in this Storybook
+
+- **Foundations** — colours, type, spacing, radius, elevation and motion, read straight from the generated tokens.
+- **Primitives** — shadcn/ui components ported to React Native (Button, Card, Badge, Alert, Tabs, Switch, AlertDialog, …). Each has controls, docs from its JSDoc, and interaction tests.
+- **Domain** — components specific to budgeting (AllowanceRing, SpendRow, DayCard, TagPicker, WidgetPreview, …).
+- **Screens** — each screen in the states that matter (first run, near limit, overspent, empty, …).
+- **Flows** — complete user journeys F1–F10 replayed step by step by `play` functions. Open the **Interactions** panel to scrub through them.
+
+## Tools in the toolbar
+
+- **Theme** — light / dark (the same NativeWind colour-scheme API the phone uses).
+- **Accessibility** panel — axe checks per story. The test runner fails a story on violations.
+- **Docs** tab on each component — props are generated from the TypeScript types and JSDoc.
+
+## Testing pyramid
+
+| Layer                        | Tool                                | Where                                           |
+| ---------------------------- | ----------------------------------- | ----------------------------------------------- |
+| Domain logic                 | Jest                                | `packages/core`                                 |
+| Tokens                       | node:test                           | `packages/tokens`                               |
+| Components / screens / flows | Jest + React Native Testing Library | `packages/ui-native`, `packages/screens-native` |
+| Navigation                   | Jest + expo-router testing-library  | `apps/mobile/__tests__`                         |
+| Same flows in a browser      | Storybook `play` + test-runner      | this project                                    |
+| Same flows on a device       | Maestro                             | `apps/mobile/.maestro`                          |
+
+Full matrix: `docs/TESTING.md`. Phone testing (Expo Go, dev client, APK): `docs/TESTING_ON_PHONE.md`.
