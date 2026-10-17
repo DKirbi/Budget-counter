@@ -3,4 +3,11 @@
  * @module testing-core
  */
 export { computeTripPlan, computeTripSummary } from '@tbc/core';
-export { DEMO_TODAY, demoData, makeSpend, makeTrip } from '@tbc/core/testing';
+export {
+  DEMO_TODAY,
+  demoData,
+  makeIssue,
+  makeReceipt,
+  makeSpend,
+  makeTrip,
+} from '@tbc/core/testing';
