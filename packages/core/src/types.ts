@@ -70,6 +70,8 @@ export interface Spend {
   note?: string;
   /** Present when this spend is one part of a split payment. */
   splitGroupId?: string;
+  /** Present when the spend was created from a scanned bill (see `Receipt`). */
+  receiptId?: string;
   /** ISO timestamp. */
   createdAt: string;
 }
@@ -77,10 +79,72 @@ export interface Spend {
 /** Colour scheme preference. */
 export type ThemePreference = 'system' | 'light' | 'dark';
 
+/** Which AI service reads bills the on-device OCR could not. `none` = stay fully offline. */
+export type AiProviderId = 'none' | 'gemini' | 'openai';
+
+/** Static description of an AI provider the user can choose. */
+export interface AiProviderMeta {
+  id: Exclude<AiProviderId, 'none'>;
+  label: string;
+  /** Model used until the user picks another. Models are retired often, so this is only a default. */
+  defaultModel: string;
+  /** API root, without a trailing slash. */
+  baseUrl: string;
+  /** One honest sentence about cost / privacy for the settings screen. */
+  note: string;
+}
+
+/** Providers offered in settings. Both accept the user's own API key. */
+export const AI_PROVIDERS: readonly AiProviderMeta[] = [
+  {
+    id: 'gemini',
+    label: 'Google Gemini',
+    defaultModel: 'gemini-flash-latest',
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+    note: 'Has a free tier with daily limits. On the free tier Google may use what you send to improve its products.',
+  },
+  {
+    id: 'openai',
+    label: 'OpenAI-compatible',
+    defaultModel: 'gpt-4o-mini',
+    baseUrl: 'https://api.openai.com/v1',
+    note: 'Pay-as-you-go on OpenAI; change the address to use any compatible service, including ones with a free tier.',
+  },
+];
+
+/** AI fallback preferences. The API key is **not** here — it lives in the device's secure storage. */
+export interface AiSettings {
+  provider: AiProviderId;
+  /** Model id; empty means the provider default. */
+  model: string;
+  /** API root; empty means the provider default. */
+  baseUrl: string;
+  /** Calls per day this app will make (a local guard, separate from the provider's own limits). */
+  dailyLimit: number;
+}
+
+/** How many AI calls were made on which day (resets by itself when the day changes). */
+export interface AiUsage {
+  date: ISODate | null;
+  count: number;
+}
+
 /** User settings that are not tied to a trip. */
 export interface Settings {
   theme: ThemePreference;
+  /** File clean bills straight away instead of asking for a tap (odd bills always ask). */
+  autoConfirmReceipts: boolean;
+  ai: AiSettings;
+  aiUsage: AiUsage;
 }
+
+/** Settings of a fresh install. */
+export const DEFAULT_SETTINGS: Settings = {
+  theme: 'system',
+  autoConfirmReceipts: true,
+  ai: { provider: 'none', model: '', baseUrl: '', dailyLimit: 20 },
+  aiUsage: { date: null, count: 0 },
+};
 
 /** Input for creating a trip. */
 export type TripInput = Omit<Trip, 'id' | 'createdAt'>;

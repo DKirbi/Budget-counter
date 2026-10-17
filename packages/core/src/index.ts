@@ -9,6 +9,7 @@ export * from './demo';
 export * from './forms';
 export * from './money';
 export * from './summary';
+export * from './receipts';
 export * from './types';
 export * from './store/budgetStore';
 export * from './store/selectors';
