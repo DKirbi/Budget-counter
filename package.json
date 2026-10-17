@@ -1,0 +1,39 @@
+{
+  "name": "trip-budget",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Trip budgeting with daily allowances \u2014 React Native (Expo) app, shared domain core, design tokens and design system.",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "pnpm --filter @tbc/mobile start",
+    "android": "pnpm --filter @tbc/mobile android",
+    "ios": "pnpm --filter @tbc/mobile ios",
+    "tokens": "pnpm --filter @tbc/tokens build",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "storybook": "pnpm --filter @tbc/storybook dev",
+    "build-storybook": "pnpm --filter @tbc/storybook build",
+    "test-storybook": "pnpm --filter @tbc/storybook test:run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check:maestro": "node scripts/check-maestro-ids.mjs",
+    "tokens:check": "pnpm --filter @tbc/tokens check"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "eslint": "^9.39.0",
+    "eslint-plugin-jsdoc": "^61.0.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.9.0",
+    "turbo": "^2.11.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.71.0",
+    "yaml": "^2.8.0"
+  }
+}
