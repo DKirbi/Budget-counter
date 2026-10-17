@@ -11,24 +11,30 @@
 import { Button, Text, cn } from '@tbc/ui-native';
 import * as React from 'react';
 import { View } from 'react-native';
+import { BillsScreen } from './screens/BillsScreen';
 import { CreateTripScreen } from './screens/CreateTripScreen';
 import { DayScreen } from './screens/DayScreen';
 import { DaysScreen } from './screens/DaysScreen';
 import { LogSpendScreen } from './screens/LogSpendScreen';
+import { ReceiptReviewScreen } from './screens/ReceiptReviewScreen';
+import { ScanScreen } from './screens/ScanScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { SummaryScreen } from './screens/SummaryScreen';
 import { TodayScreen } from './screens/TodayScreen';
 
-type Tab = 'today' | 'days' | 'summary' | 'settings';
+type Tab = 'today' | 'days' | 'bills' | 'summary' | 'settings';
 type Route =
   | { name: 'day'; date: string }
   | { name: 'spend-new'; date?: string }
   | { name: 'spend-edit'; id: string }
-  | { name: 'trip-new' };
+  | { name: 'trip-new' }
+  | { name: 'scan' }
+  | { name: 'receipt'; id: string };
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'today', label: 'Today' },
   { id: 'days', label: 'Days' },
+  { id: 'bills', label: 'Bills' },
   { id: 'summary', label: 'Summary' },
   { id: 'settings', label: 'Settings' },
 ];
@@ -54,13 +60,22 @@ export function MiniApp({ initialTab = 'today' }: MiniAppProps) {
   const openSpend = (date?: string) => push({ name: 'spend-new', date });
   const createTrip = () => push({ name: 'trip-new' });
 
+  // A real stack navigator keeps the scan screen alive underneath a bill you opened from it, so the batch list
+  // survives the round trip. Mirror that: keep it mounted (hidden) while a receipt is on top.
+  const scanOnTop = top?.name === 'scan';
+  const scanBelow = top?.name === 'receipt' && stack[stack.length - 2]?.name === 'scan';
+
   let body: React.ReactNode;
-  if (top?.name === 'trip-new') {
+  if (scanOnTop) {
+    body = null;
+  } else if (top?.name === 'trip-new') {
     body = <CreateTripScreen onDone={() => setStack([])} />;
   } else if (top?.name === 'spend-new') {
     body = <LogSpendScreen initialDate={top.date} onDone={pop} />;
   } else if (top?.name === 'spend-edit') {
     body = <LogSpendScreen spendId={top.id} onDone={pop} />;
+  } else if (top?.name === 'receipt') {
+    body = <ReceiptReviewScreen receiptId={top.id} onDone={pop} />;
   } else if (top?.name === 'day') {
     body = (
       <DayScreen
@@ -82,6 +97,14 @@ export function MiniApp({ initialTab = 'today' }: MiniAppProps) {
     body = (
       <DaysScreen onOpenDay={(date) => push({ name: 'day', date })} onCreateTrip={createTrip} />
     );
+  } else if (tab === 'bills') {
+    body = (
+      <BillsScreen
+        onScan={() => push({ name: 'scan' })}
+        onOpenReceipt={(id) => push({ name: 'receipt', id })}
+        onCreateTrip={createTrip}
+      />
+    );
   } else if (tab === 'summary') {
     body = <SummaryScreen onCreateTrip={createTrip} />;
   } else {
@@ -90,7 +113,22 @@ export function MiniApp({ initialTab = 'today' }: MiniAppProps) {
 
   return (
     <View className="flex-1 bg-background" testID="mini-app">
-      <View className="flex-1">{body}</View>
+      <View className="flex-1">
+        {scanOnTop || scanBelow ? (
+          <View key="scan" className={scanOnTop ? 'flex-1' : 'hidden'}>
+            <ScanScreen
+              onOpenReceipt={(id) => push({ name: 'receipt', id })}
+              onDone={pop}
+              onCreateTrip={createTrip}
+            />
+          </View>
+        ) : null}
+        {body ? (
+          <View key="body" className="flex-1">
+            {body}
+          </View>
+        ) : null}
+      </View>
       {top ? (
         <View className="border-t border-border bg-card p-2">
           <Button variant="ghost" onPress={pop} testID="nav-back" accessibilityLabel="Back">

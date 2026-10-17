@@ -2,13 +2,23 @@
  * Test / Storybook helpers for rendering screens with a real (in-memory) store.
  * @module testing
  */
-import { type BudgetData, type BudgetStore } from '@tbc/core';
+import { type BudgetData, type BudgetStore, type ScanServices } from '@tbc/core';
 import { BudgetProvider } from '@tbc/core/react';
-import { DEMO_TODAY, createTestStore } from '@tbc/core/testing';
+import { DEMO_TODAY, createFakeScanServices, createTestStore } from '@tbc/core/testing';
 import { renderUI } from '@tbc/ui-native/testing';
+import { act } from '@testing-library/react-native';
 import * as React from 'react';
+import { ScanServicesProvider } from './lib/services';
 
-export { DEMO_TODAY, createTestStore } from '@tbc/core/testing';
+export {
+  DEMO_TODAY,
+  RECEIPT_FIXTURES,
+  createFakeScanServices,
+  createTestStore,
+  fixtureImages,
+  makeReceipt,
+  simpleBillText,
+} from '@tbc/core/testing';
 
 /** Options for {@link renderWithStore}. */
 export interface RenderWithStoreOptions {
@@ -20,6 +30,8 @@ export interface RenderWithStoreOptions {
   store?: BudgetStore;
   /** Frozen "today". Defaults to {@link DEMO_TODAY}. */
   today?: string;
+  /** Scan services (OCR, camera, secrets, fetch). Defaults to an empty fake: nothing readable, no photos. */
+  services?: ScanServices;
 }
 
 /**
@@ -36,8 +48,14 @@ export async function renderWithStore(
   const store = options.store ?? createTestStore({ demo: options.demo, initial: options.initial });
   const result = await renderUI(
     <BudgetProvider store={store} today={options.today ?? DEMO_TODAY}>
-      {ui}
+      <ScanServicesProvider services={options.services ?? createFakeScanServices()}>
+        {ui}
+      </ScanServicesProvider>
     </BudgetProvider>,
   );
+  // Let mount-time promises (reading the saved AI key, asking whether OCR exists) settle inside act().
+  await act(async () => {
+    await Promise.resolve();
+  });
   return { ...result, store };
 }

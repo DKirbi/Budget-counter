@@ -3,14 +3,20 @@
  * only the router is replaced (MiniApp). Each `describe` is a named flow (F1…F10) that is mirrored
  * 1:1 by a Storybook play function and a Maestro YAML; see docs/TESTING.md for the matrix.
  */
-import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { computeTripPlan } from '@tbc/core';
 import { makeSpend, makeTrip } from '@tbc/core/testing';
 import * as React from 'react';
 import { MiniApp } from './MiniApp';
 import { renderWithStore } from './testing';
 
-const press = (id: string) => fireEvent.press(screen.getByTestId(id));
+/** Tap, then let promises started by the tap (reading the saved AI key, …) settle inside `act`. */
+const press = (id: string) =>
+  act(async () => {
+    await fireEvent.press(screen.getByTestId(id));
+    await Promise.resolve();
+    await Promise.resolve();
+  });
 const type = (id: string, text: string) => fireEvent.changeText(screen.getByTestId(id), text);
 const text = (id: string) => within(screen.getByTestId(id));
 
