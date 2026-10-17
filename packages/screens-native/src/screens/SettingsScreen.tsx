@@ -31,6 +31,7 @@ import { Check, Plus, Sparkles, Trash2 } from 'lucide-react-native';
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
 import { OVERSPEND_COPY } from '../lib/copy';
+import { BillsSettingsCard } from './BillsSettingsCard';
 
 /** Props for {@link SettingsScreen}. */
 export interface SettingsScreenProps {
@@ -104,6 +105,8 @@ export function SettingsScreen({ onCreateTrip, appVersion = '0.1.0' }: SettingsS
           </CardContent>
         </Card>
       ) : null}
+
+      <BillsSettingsCard />
 
       <Card>
         <CardHeader>
