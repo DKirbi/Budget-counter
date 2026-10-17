@@ -1,0 +1,18 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { MotionTable, ShadowScale } from './TokenViews';
+
+<Meta title="Foundations/Elevation & Motion" />
+
+# Elevation & motion
+
+## Shadows
+
+Used sparingly — borders carry most of the structure. On Android, React Native maps shadows to `elevation`, so the tokens also expose an elevation number in `theme.ts`.
+
+<ShadowScale />
+
+## Motion
+
+Short and functional. Respect the OS "reduce motion" setting: animations shorter than `duration.fast` are skipped, longer ones cross-fade.
+
+<MotionTable />

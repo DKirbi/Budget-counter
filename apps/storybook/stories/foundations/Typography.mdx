@@ -1,0 +1,26 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { TypeScale } from './TokenViews';
+
+<Meta title="Foundations/Typography" />
+
+# Typography
+
+The system font stack (SF on iOS, Roboto on Android, Segoe/system on web) — zero font loading, native feel, best legibility for a tool used in bright sun.
+Amounts use **tabular figures** (`tabular-nums` / `variant="numeric"`) so digits do not jitter while a value updates.
+
+<TypeScale />
+
+## Component variants
+
+The `Text` primitive maps semantic variants onto the scale (see **Primitives → Text**):
+
+| Variant             | Class                                          | Use                   |
+| ------------------- | ---------------------------------------------- | --------------------- |
+| `h1`                | `text-4xl font-bold`                           | Screen hero numbers   |
+| `h2`                | `text-2xl font-semibold`                       | Screen titles         |
+| `h3`                | `text-xl font-semibold`                        | Card titles           |
+| `body`              | `text-base`                                    | Default               |
+| `muted` / `caption` | `text-sm` / `text-xs`, `text-muted-foreground` | Secondary information |
+| `numeric`           | `tabular-nums font-semibold`                   | Money                 |
+
+Minimum text size on touchable rows is `text-base`; `text-xs` is caption-only.

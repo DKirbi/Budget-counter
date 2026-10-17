@@ -1,0 +1,25 @@
+/*
+ * Storybook's global stylesheet = the app's global.css, but with the WEB token file:
+ * `:root` + `.dark` class (shadcn convention) instead of NativeWind-native's `.dark:root`.
+ */
+@import '@tbc/tokens/css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#storybook-root {
+  min-height: 100%;
+}
+
+/* Docs pages: give component previews the same canvas colour as the app. */
+.sbdocs-preview {
+  background: hsl(var(--background));
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}

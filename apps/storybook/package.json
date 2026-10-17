@@ -1,0 +1,45 @@
+{
+  "name": "@tbc/storybook",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Storybook for the React Native design system, rendered on the web with react-native-web + Vite. Documentation, visual review and interaction tests (play functions) for every component and user flow.",
+  "type": "module",
+  "scripts": {
+    "dev": "storybook dev -p 6006",
+    "build": "storybook build -o storybook-static --quiet",
+    "serve": "http-server storybook-static -p 6006 -s --silent",
+    "test:run": "test-storybook --url http://127.0.0.1:6006 --config-dir .storybook",
+    "test:ci": "concurrently -k -s first -n SB,TEST \"http-server storybook-static -p 6006 -s --silent\" \"wait-on -t 60000 tcp:127.0.0.1:6006 && test-storybook --url http://127.0.0.1:6006 --config-dir .storybook --maxWorkers=2\"",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test:build": "pnpm build && pnpm test:ci"
+  },
+  "dependencies": {
+    "@tbc/core": "workspace:*",
+    "@tbc/screens-native": "workspace:*",
+    "@tbc/tokens": "workspace:*",
+    "@tbc/ui-native": "workspace:*"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "^10.6.0",
+    "@storybook/addon-docs": "^10.6.0",
+    "@storybook/react-native-web-vite": "^10.6.0",
+    "@storybook/test-runner": "^0.24.5",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.0",
+    "http-server": "^14.1.1",
+    "nativewind": "^4.2.7",
+    "playwright": "1.56.0",
+    "postcss": "^8.5.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-css-interop": "^0.2.7",
+    "react-native-web": "^0.21.3",
+    "storybook": "^10.6.0",
+    "tailwindcss": "3.4.19",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.6",
+    "wait-on": "^9.0.0"
+  }
+}

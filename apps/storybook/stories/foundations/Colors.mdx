@@ -1,0 +1,36 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Palette, SemanticColors } from './TokenViews';
+
+<Meta title="Foundations/Colors" />
+
+# Colors
+
+Two layers, as in shadcn/ui:
+
+1. **Core palette** — raw hue scales (`stone`, `teal`, `red`, …). Defined once in `packages/tokens/src/core/color.json`. **Components never reference these.**
+2. **Semantic tokens** — roles such as `background`, `primary`, `destructive`, `success`. Defined per theme in `packages/tokens/src/semantic/{light,dark}.json` and referenced by name (`bg-primary`, `text-muted-foreground`).
+
+Because components only know the _role_, dark mode, high-contrast or a rebrand is a token edit — no component changes.
+Every foreground/background pair below is contrast-checked in CI (`packages/tokens/test/color.test.mjs`): body text ≥ 4.5 : 1.
+
+Use the **Theme** switch in the toolbar to flip the whole page.
+
+## Semantic — light
+
+<SemanticColors theme="light" />
+
+## Semantic — dark
+
+<SemanticColors theme="dark" />
+
+## Core palette
+
+<Palette />
+
+## Naming → Tailwind class
+
+| Token                | Tailwind / NativeWind               | CSS variable                     | SCSS                             |
+| -------------------- | ----------------------------------- | -------------------------------- | -------------------------------- |
+| `primary`            | `bg-primary`, `text-primary`        | `hsl(var(--primary))`            | `semantic('primary')`            |
+| `primary-foreground` | `text-primary-foreground`           | `hsl(var(--primary-foreground))` | `semantic('primary-foreground')` |
+| `destructive`        | `bg-destructive/10` (opacity works) | `hsl(var(--destructive) / .1)`   | `semantic('destructive', .1)`    |
