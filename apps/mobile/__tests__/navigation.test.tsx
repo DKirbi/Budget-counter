@@ -75,6 +75,54 @@ describe('app navigation', () => {
     expect(await screen.findByText('Edit spend')).toBeOnTheScreen();
   });
 
+  it('has a Bills tab that asks for a trip first, then opens the scan screen', async () => {
+    renderRouter('./app');
+    await press('tab-bills');
+    expect(await screen.findByTestId('bills-no-trip')).toBeOnTheScreen();
+
+    await press('tab-settings');
+    await press('load-demo');
+    await press('tab-bills');
+    expect(await screen.findByTestId('timeline-empty')).toBeOnTheScreen();
+    await press('scan-bills');
+    expect(await screen.findByTestId('screen-scan')).toBeOnTheScreen();
+    expect(screen).toHavePathname('/scan');
+    // Jest has no ML Kit native module — exactly the situation in Expo Go — so the screen says so instead of crashing.
+    expect(await screen.findByTestId('scan-no-ocr')).toBeOnTheScreen();
+  });
+
+  it('types a bill in from the scan screen and lands on its review route', async () => {
+    renderRouter('./app');
+    await press('tab-settings');
+    await press('load-demo');
+    await press('tab-bills');
+    await press('scan-bills');
+    await press('scan-manual');
+    expect(await screen.findByTestId('screen-receipt')).toBeOnTheScreen();
+    const receipt = appStore.getState().receipts[0]!;
+    expect(screen).toHavePathname(`/receipt/${receipt.id}`);
+    expect(receipt).toMatchObject({ status: 'needs-attention', data: { source: 'manual' } });
+  });
+
+  it('supports deep links to a bill, and says so when it is gone', async () => {
+    renderRouter('./app');
+    await press('tab-settings');
+    await press('load-demo');
+    const trip = appStore.getState().trips[0]!;
+    const saved = appStore.getState().actions.saveReceipt({
+      data: { schemaVersion: 1, source: 'manual', merchant: 'Kiosk', items: [], confidence: 0 },
+      rawText: '',
+      tripId: trip.id,
+      date: null,
+      tag: 'other',
+    });
+    renderRouter('./app', { initialUrl: `/receipt/${saved.id}` });
+    expect(await screen.findByDisplayValue('Kiosk')).toBeOnTheScreen();
+
+    renderRouter('./app', { initialUrl: '/receipt/does-not-exist' });
+    expect(await screen.findByTestId('receipt-not-found')).toBeOnTheScreen();
+  });
+
   it('shows the not-found page for unknown links', async () => {
     renderRouter('./app', { initialUrl: '/nope/nothing' });
     expect(await screen.findByText('Page not found')).toBeOnTheScreen();

@@ -33,9 +33,35 @@
           "imageWidth": 160,
           "resizeMode": "contain",
           "backgroundColor": "#fafaf9",
-          "dark": { "backgroundColor": "#0c0a09", "image": "./assets/splash-icon.png" }
+          "dark": {
+            "backgroundColor": "#0c0a09",
+            "image": "./assets/splash-icon.png"
+          }
         }
-      ]
+      ],
+      [
+        "expo-mlkit-ocr",
+        {
+          "iosEngine": "auto"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.4",
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Budget Counter reads the bills you choose, on this device, to build your trip timeline.",
+          "cameraPermission": "Budget Counter uses the camera to photograph a bill. The photo is read on this device and kept only here."
+        }
+      ],
+      "expo-secure-store"
     ]
   }
 }

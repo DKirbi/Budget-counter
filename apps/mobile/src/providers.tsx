@@ -3,11 +3,13 @@
  * store → hydration gate (keeps the splash screen up until saved data is read) → theme/safe-area/portal.
  * @module providers
  */
-import type { BudgetStore } from '@tbc/core';
+import type { BudgetStore, ScanServices } from '@tbc/core';
 import { BudgetProvider, useBudget, useHydrated } from '@tbc/core/react';
+import { ScanServicesProvider } from '@tbc/screens-native';
 import { UIProvider } from '@tbc/ui-native';
 import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
+import { nativeScanServices } from './scan/device';
 import { appStore } from './store';
 
 // Keep the native splash up until persisted data is loaded. Errors mean it was already hidden
@@ -31,6 +33,8 @@ export interface AppProvidersProps {
   store?: BudgetStore;
   /** Freeze "today" (tests). */
   today?: string;
+  /** Override the device services: OCR, camera, secure storage (tests). */
+  services?: ScanServices;
 }
 
 /**
@@ -38,10 +42,17 @@ export interface AppProvidersProps {
  * @example
  * <AppProviders><Stack /></AppProviders>
  */
-export function AppProviders({ children, store = appStore, today }: AppProvidersProps) {
+export function AppProviders({
+  children,
+  store = appStore,
+  today,
+  services = nativeScanServices,
+}: AppProvidersProps) {
   return (
     <BudgetProvider store={store} today={today}>
-      <Shell>{children}</Shell>
+      <ScanServicesProvider services={services}>
+        <Shell>{children}</Shell>
+      </ScanServicesProvider>
     </BudgetProvider>
   );
 }

@@ -1,6 +1,7 @@
 /**
  * Root layout: providers + the navigation stack.
- * Modals (add/edit spend, new trip) slide over the tabs; the day detail is a normal push.
+ * Modals (add/edit spend, new trip) slide over the tabs; the day detail, the scan screen and a bill's review screen
+ * are normal pushes.
  */
 import '../global.css';
 import { useTheme } from '@tbc/ui-native';
@@ -26,6 +27,8 @@ function ThemedStack() {
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="day/[date]" />
+        <Stack.Screen name="scan" />
+        <Stack.Screen name="receipt/[id]" />
         <Stack.Screen name="spend/new" options={{ presentation: 'modal' }} />
         <Stack.Screen name="spend/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="trip/new" options={{ presentation: 'modal' }} />
