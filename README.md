@@ -6,14 +6,19 @@ Split a trip budget into **one allowance per day**. Unspent money rolls into tom
 tomorrow (_cascade_, default) or spread across the remaining days (_spread it out_). Log a spend in seconds — even split
 one card payment into tagged parts — and watch today's number react.
 
-This repository is a **first edition (MVP, "core loop")** built component-first:
+This repository is a **first edition (MVP)** built component-first: the **core loop** plus **bill scanning**.
 
 - 📱 **React Native app** (Expo SDK 57, expo-router, NativeWind) — create trip → log/edit/split spends → today ring,
   days, summary, settings, light/dark, offline persistence.
 - 🎨 **Design system** on **shadcn/ui + Radix** (via rn-primitives) with a **design-token pipeline**
   (W3C tokens → CSS · SCSS · Tailwind preset · typed theme) — change a token, everything follows.
-- 📚 **Storybook** with every primitive, domain component, screen and the ten user flows as runnable `play` tests + axe a11y.
-- ✅ **Tests for every flow** at four levels (unit, component/flow, Storybook, Maestro E2E) with the same F1–F10 numbering.
+- 🧾 **Bill scanning** — photograph the day's paper bills in the evening; text is read **on the device** (ML Kit), saved as
+  a JSON digital copy, counted against the budget in the background and filed on a **timeline by the date printed on the
+  bill**. Odd bills (other day, outside the trip, unreadable, duplicate…) ask instead of guessing. An optional **AI
+  fallback** (your own Gemini / OpenAI-compatible key, per-use consent, daily cap) finishes what OCR could not read, or you
+  fill it in by hand and stay offline. See **[docs/RECEIPT_SCANNING.md](docs/RECEIPT_SCANNING.md)**.
+- 📚 **Storybook** with every primitive, domain component, screen and the fifteen user flows as runnable `play` tests + axe a11y.
+- ✅ **Tests for every flow** — unit, component/flow and Storybook for F1–F15, plus Maestro E2E for F0–F10.
 - 🚚 **CI/CD** for lint/type/test/Storybook, token drift, installable Android APK, emulator E2E, EAS, Pages deploy.
 - 🌐 **Web build guide** for the React (shadcn/Radix) app that reuses the same core and tokens.
 
@@ -24,6 +29,7 @@ This repository is a **first edition (MVP, "core loop")** built component-first:
 pnpm install
 pnpm tokens          # (re)generate design tokens — normally already up to date
 pnpm start           # Expo dev server → scan the QR with Expo Go, or press `a` for an Android emulator
+                     # (bill OCR needs a development build, not Expo Go — see docs/TESTING_ON_PHONE.md)
 pnpm storybook       # design system + flows on http://localhost:6006
 pnpm test            # every Jest suite
 ```
@@ -36,13 +42,14 @@ Details for every option: **[docs/TESTING_ON_PHONE.md](docs/TESTING_ON_PHONE.md)
 ```
 packages/
   tokens/          Design tokens (DTCG JSON) → Style Dictionary → generated CSS/SCSS/Tailwind/TS
-  core/            Platform-free domain: money, dates, allowance engine, forms, zustand store, hooks
+  core/            Platform-free domain: money, dates, allowance engine, forms, receipts (parse · categorise ·
+                   odd-bill checks · AI client), zustand store, hooks
   ui-native/       RN design system: shadcn-style primitives + domain components (NativeWind, CVA)
-  screens-native/  The 7 screens + router-free MiniApp used by flow tests and Storybook
+  screens-native/  The 10 screens + router-free MiniApp used by flow tests and Storybook
 apps/
   mobile/          Expo app (routes are thin adapters) + Jest navigation tests + Maestro flows
   storybook/       Storybook 10 (react-native-web + Vite): docs, visual review, interaction + a11y tests
-docs/              Architecture · Design system · Testing · Testing on a phone · Web build guide
+docs/              Architecture · Receipt scanning · Design system · Testing · Testing on a phone · Web build guide
 .github/           CI, Storybook deploy, APK, E2E, EAS, token autofix, Chromatic, Dependabot
 ```
 
@@ -51,10 +58,11 @@ docs/              Architecture · Design system · Testing · Testing on a phon
 | Read                                                             | When                                                                                                            |
 | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)                     | how the pieces fit, domain model, decisions & alternatives, roadmap hooks                                       |
+| [docs/RECEIPT_SCANNING.md](docs/RECEIPT_SCANNING.md)             | the bill pipeline, JSON schema, odd-bill rules, hybrid OCR + AI fallback (privacy, limits, providers)           |
 | [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)                   | tokens, component inventory (shadcn ↔ rn-primitives), how to change a token, NativeWind v4 → v5/Uniwind mapping |
-| [docs/TESTING.md](docs/TESTING.md)                               | the test pyramid, **flow matrix** (F1–F10 ↔ Jest ↔ Storybook ↔ Maestro), conventions, CI                        |
+| [docs/TESTING.md](docs/TESTING.md)                               | the test pyramid, **flow matrix** (F1–F15 ↔ Jest ↔ Storybook ↔ Maestro), conventions, CI                        |
 | [docs/TESTING_ON_PHONE.md](docs/TESTING_ON_PHONE.md)             | Expo Go, dev-client, APK (Actions/EAS/local), adb, Maestro, Play/TestFlight, device farms                       |
-| [docs/WEB_BUILD_GUIDE.md](docs/WEB_BUILD_GUIDE.md)               | building the React web app on shadcn/ui + Radix with the same tokens and core                                   |
+| [docs/WEB_BUILD_GUIDE.md](docs/WEB_BUILD_GUIDE.md)               | building the React web app on shadcn/ui + Radix with the same tokens and core; same repo vs. new repo           |
 | [apps/mobile/.maestro/README.md](apps/mobile/.maestro/README.md) | running E2E flows                                                                                               |
 | [CURSOR_CONTEXT.md](CURSOR_CONTEXT.md)                           | one-file briefing for an AI editor (Cursor): brief, decisions, rules, verified vs. unverified, next steps       |
 
@@ -84,7 +92,7 @@ flowchart LR
   C --> D["ui-native components<br/>(className → NativeWind)"]
   C --> E["Storybook"]
   C --> F["future web app"]
-  D & E & F --> G["CI: contrast tests · Jest · 98 Storybook tests + axe · Expo bundle"]
+  D & E & F --> G["CI: contrast tests · Jest · 133 Storybook tests + axe · Expo bundle"]
 ```
 
 Tokens are shared across platforms automatically; React Native and React _components_ are separate files kept in sync by a
@@ -94,12 +102,13 @@ parity checklist (see the web guide) — deliberately, as shadcn itself does.
 
 - **Verified locally in the build environment:** token build + drift check + WCAG contrast tests, all Jest suites,
   ESLint (incl. JSDoc rule), TypeScript for every package, Storybook production build and the full story test run with
-  axe, the Maestro selector guard, and an Android JS bundle export through Metro.
-- **Written but _not_ executed here** (they need GitHub runners, an Android SDK/emulator, or third-party accounts): the
-  APK build, the Maestro run on an emulator, EAS, Chromatic, Pages deploy. The workflows are valid YAML and use only
+  axe, the Maestro selector guard, an Android JS bundle export through Metro, and `expo prebuild` for Android and iOS.
+- **Written but _not_ executed here** (they need GitHub runners, an Android SDK/emulator, a real device, macOS or
+  third-party accounts): the APK/IPA build, **real camera + ML Kit accuracy on real bills**, a live Gemini/OpenAI call, the
+  Maestro run on an emulator, EAS, Chromatic, Pages deploy. The workflows are valid YAML and use only
   commands that were run locally, but expect small fixes on their first real run.
 - **Not built yet (by design):** the React web app (guide provided), Android home-screen widgets (the hero feature;
-  `WidgetPreview` defines the data contract), cloud sync, receipt/bank import.
+  `WidgetPreview` defines the data contract), cloud sync, Maestro flows for bill scanning, a paid-AI tier / own proxy.
 - Working title: _Budget Counter_. It is one constant (`APP_NAME` in `@tbc/core`) plus `app.json` to rename.
 
 ## Credits

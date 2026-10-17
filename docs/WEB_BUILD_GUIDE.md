@@ -8,7 +8,8 @@ _"the web can consume our tokens"_ and _"the web can reuse `@tbc/core`"_ — wer
 > **What is shared and what isn't**
 >
 > - Shared, unchanged: `@tbc/tokens` (look & feel), `@tbc/core` (money, dates, allowance engine, forms, zustand store,
->   React hooks), test fixtures (`@tbc/core/testing`), the flow definitions F1–F10.
+>   React hooks, receipt parser / categoriser / odd-bill rules / AI client), test fixtures and fakes (`@tbc/core/testing`),
+>   the flow definitions F1–F15.
 > - Per-platform: components and screens. Web uses **shadcn/ui on Radix UI** (the DOM originals of what
 >   `@tbc/ui-native` re-implements with rn-primitives). We copy shadcn components, we don't invent any.
 
@@ -29,6 +30,50 @@ colours) can't. Approach **B** is a legitimate 1-day shortcut for an internal de
 RN components render on the web (that's what Storybook is), and `app.json` has `web.bundler: metro`; do it first if you
 need a URL quickly, then replace it with A as the product grows. Choose **C** only if you later want screens shared at
 source level.
+
+## 1b · Same repo, or a new one?
+
+**Put the web app in this repository** (`apps/web` + `packages/ui-web`). The whole architecture exists so that web and
+mobile share the parts that must never disagree — `@tbc/core` (money, allowance engine, receipt parser, odd-bill rules,
+store) and `@tbc/tokens` — and a workspace link is the only mechanism that makes that free.
+
+| Question                                               | Same monorepo (recommended)                                                                                         | Separate repo                                                       |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| A parser fix (new receipt language, new odd-bill rule) | one PR, both apps get it, tests of both run                                                                         | publish `@tbc/core`, bump, release in two repos — versions drift    |
+| Token change (colour, radius)                          | `pnpm tokens` regenerates for both; CI tests both                                                                   | publish `@tbc/tokens` as a package; each repo must upgrade          |
+| Atomic refactors (rename a core type)                  | `tsc` across the whole repo catches every caller                                                                    | breaking change lands in one repo, breaks the other later           |
+| CI cost                                                | Turborepo `--filter=...[origin/main]` and caching keep it fast; path-filtered jobs per app                          | each repo small and fast, but you rebuild the shared packages twice |
+| Release cadence                                        | independent: `apps/mobile` ships via EAS/tags, `apps/web` deploys on push to `main` — separate workflows, same repo | trivially independent                                               |
+| Access control / open-sourcing one half                | all or nothing                                                                                                      | possible                                                            |
+| Different team owning the web app                      | needs CODEOWNERS per folder                                                                                         | natural                                                             |
+
+Choose a **separate repository only if** (a) a different team owns the web app and will not touch `core`, (b) you want to
+open-source one half, or (c) the web app becomes a different product. If you ever need to split later, `@tbc/core` and
+`@tbc/tokens` are already self-contained packages with no dependency on the apps: publish them from the monorepo
+(Changesets) and let the new repo consume them from npm — nothing has to be rewritten.
+
+Practical rules for living in one repo:
+
+- Add path filters so a web-only change does not trigger the Android build (`on.push.paths: ['apps/web/**', 'packages/ui-web/**', 'packages/core/**', 'packages/tokens/**']`) and vice versa.
+- One workflow per deployable: `android-apk.yml` (exists), `web-deploy.yml` (new: build `apps/web`, publish to GitHub Pages / Cloudflare Pages / Vercel).
+- `packages/ui-web` must not import `react-native*` and `packages/ui-native` must not import `react-dom` / Radix. Enforce it
+  with an ESLint `no-restricted-imports` override per package so the two component sets cannot leak into each other.
+- Keep `@tbc/core` free of both. It currently depends only on `zustand` and `zod`.
+
+### What the web app does with bill scanning
+
+The bill pipeline lives in `@tbc/core` behind the `ScanServices` ports, so the web app needs **adapters, not a rewrite**:
+
+| Port      | Web adapter                                                                                                                                                                             |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `picker`  | `<input type="file" accept="image/*" multiple capture="environment">` (opens the camera on phones)                                                                                      |
+| `ocr`     | `tesseract.js` (WASM, offline, noticeably less accurate than ML Kit) — or report `isSupported() = false` and lean on the AI fallback / manual entry                                     |
+| `images`  | IndexedDB blobs + a `canvas` resize/re-encode for `encodeForAi`                                                                                                                         |
+| `secrets` | `localStorage` is readable by any script on the origin; for the BYO AI key prefer an in-memory field with an explicit "remember" opt-in, or a server-side proxy once there is a backend |
+| `fetch`   | global `fetch` (Gemini's REST API allows browser calls with a key; OpenAI-compatible endpoints may need CORS or a proxy)                                                                |
+
+All parsing, odd-bill checks, categorising, budgeting and the timeline logic are shared; only the screens
+(`ReceiptTimeline`, scan list, review form) are ported from `@tbc/ui-native` to shadcn/ui.
 
 ## 2 · Target layout
 
