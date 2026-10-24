@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@react-native/jest-preset": "^0.86.3",
-    "@storybook/react-native-web-vite": "^10.6.0",
+    "@storybook/react-native-web-vite": "^10.6.3",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^29.5.14",
     "@types/react": "~19.2.0",
@@ -44,7 +44,7 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-svg": "15.15.4",
     "react-native-worklets": "0.10.1",
-    "storybook": "^10.6.0",
+    "storybook": "^10.6.3",
     "tailwindcss": "3.4.19",
     "typescript": "~5.9.3"
   }
